@@ -36,8 +36,15 @@ func run(wt, bt string) {
       timer := time.NewTimer(1 * time.Second)
 
       <- timer.C
-      fmt.Printf("\r%d:%d", int(workTimer / 60), workTimer % 60)
+      fmt.Printf("\r%02d:%02d", int(workTimer / 60), workTimer % 60)
       workTimer--
+    }
+    for breakTimer > 0 {
+      timer := time.NewTimer(1 * time.Second)
+
+      <- timer.C
+      fmt.Printf("\r%02d:%02d", int(breakTimer / 60), breakTimer % 60)
+      breakTimer--
     }
     break
   }
