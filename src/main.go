@@ -40,16 +40,16 @@ func run(wt, bt string, alarm Alarm) {
       timer := time.NewTimer(1 * time.Second)
 
       <- timer.C
-      fmt.Printf("\rWork: %02d:%02d", int(workTimer / 60), workTimer % 60)
       workTimer--
+      fmt.Printf("\rWork: %02d:%02d", int(workTimer / 60), workTimer % 60)
     }
     alarm("Break Time!")
     for breakTimer > 0 {
       timer := time.NewTimer(1 * time.Second)
 
       <- timer.C
-      fmt.Printf("\rBreak: %02d:%02d", int(breakTimer / 60), breakTimer % 60)
       breakTimer--
+      fmt.Printf("\rBreak: %02d:%02d", int(breakTimer / 60), breakTimer % 60)
     }
     alarm("Work Time!")
   }
