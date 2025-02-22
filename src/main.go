@@ -8,6 +8,8 @@ import (
   "strings"
   "time"
   "strconv"
+
+  "golang.org/x/term"
 )
 
 type Alarm func(string)
@@ -40,6 +42,8 @@ func run(wait, resume chan bool, wt, bt string, alarm Alarm) {
 
       select {
         case <-wait:
+          workTimer++ 
+          fmt.Printf("\rWork: %02d:%02d", int(workTimer / 60), workTimer % 60)
           <-resume
         default:
           timer := time.NewTimer(1 * time.Second)
@@ -63,20 +67,16 @@ func run(wait, resume chan bool, wt, bt string, alarm Alarm) {
 }
 
 func manage(wait, resume chan bool, reader *bufio.Reader) {
+  old, _ := term.MakeRaw(int(os.Stdin.Fd()))
+  defer term.Restore(int(os.Stdin.Fd()), old)
   w := false
-  fp, _ := os.Create("tmp")
-  defer fp.Close()
-  writer := bufio.NewWriter(fp)
-  _, err := fmt.Fprintf(writer, "in\n")
-  if err != nil {
-    panic(err)
-  }
   for true {
-    in, _ := reader.ReadString('\n')
-    fmt.Fprintf(writer, ":%b\n", in)
-    in = strings.Replace(in, "\n", "", -1)
-    if in == " " {
-      fmt.Println(w)
+    //in, _ := reader.ReadString('\n')
+    //in = strings.Replace(in, "\n", "", -1)
+    var in []byte = make([]byte, 1)
+    os.Stdin.Read(in)
+
+    if in[0] == byte(' ') {
       w = !w
       if w {
         wait <- true
@@ -84,8 +84,9 @@ func manage(wait, resume chan bool, reader *bufio.Reader) {
         resume <- true
       }
     }
-    writer.Flush()
-    fp.Sync()
+    if in[0] == byte('q') {
+      return
+    }
   }
 }
 
