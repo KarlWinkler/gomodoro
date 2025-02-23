@@ -46,32 +46,39 @@ func run(wait, resume chan bool, wt, bt string, alarm Alarm) {
   }
 
   for true {
-    workTimer := wtInt * 5
-    breakTimer := btInt * 5
+    workTimer := wtInt * 1
+    breakTimer := btInt * 1
 
     for workTimer > 0 {
+      fmt.Printf("\033[2K\rWork: %02d:%02d", int(workTimer / 60), workTimer % 60)
 
       select {
-        case <-wait:
-          workTimer++ 
-          fmt.Printf("\rWork: %02d:%02d", int(workTimer / 60), workTimer % 60)
-          <-resume
+        case <- wait:
+          fmt.Printf("\033[2K\rWork: %02d:%02d ||", int(workTimer / 60), workTimer % 60)
+          <- resume
         default:
           timer := time.NewTimer(1 * time.Second)
 
           <- timer.C
           workTimer--
-          fmt.Printf("\rWork: %02d:%02d", int(workTimer / 60), workTimer % 60)
+          fmt.Printf("\033[2K\rWork: %02d:%02d", int(workTimer / 60), workTimer % 60)
       }
-
     }
     alarm("Break Time!", streamer)
     for breakTimer > 0 {
-      timer := time.NewTimer(1 * time.Second)
+      fmt.Printf("\033[2K\rBreak: %02d:%02d", int(breakTimer / 60), breakTimer % 60)
 
-      <- timer.C
-      breakTimer--
-      fmt.Printf("\rBreak: %02d:%02d", int(breakTimer / 60), breakTimer % 60)
+      select {
+        case <- wait:
+          fmt.Printf("\033[2K\rBreak: %02d:%02d ||", int(breakTimer / 60), breakTimer % 60)
+          <- resume
+        default:
+          timer := time.NewTimer(1 * time.Second)
+
+          <- timer.C
+          breakTimer--
+          fmt.Printf("\033[2K\rBreak: %02d:%02d", int(breakTimer / 60), breakTimer % 60)
+      }
     }
     alarm("Work Time!", streamer)
   }
