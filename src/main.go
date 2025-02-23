@@ -46,36 +46,35 @@ func run(wait, resume chan bool, wt, bt string, alarm Alarm) {
   }
 
   for true {
-    workTimer := wtInt * 1
-    breakTimer := btInt * 1
+    workTimer := wtInt * 60
+    breakTimer := btInt * 60
 
+    fmt.Printf("\033[2K\rWork: %02d:%02d", int(workTimer / 60), workTimer % 60)
     for workTimer > 0 {
-      fmt.Printf("\033[2K\rWork: %02d:%02d", int(workTimer / 60), workTimer % 60)
+      timer := time.NewTimer(1 * time.Second)
 
       select {
         case <- wait:
           fmt.Printf("\033[2K\rWork: %02d:%02d ||", int(workTimer / 60), workTimer % 60)
           <- resume
-        default:
-          timer := time.NewTimer(1 * time.Second)
-
-          <- timer.C
+          fmt.Printf("\033[2K\rWork: %02d:%02d", int(workTimer / 60), workTimer % 60)
+        case <- timer.C:
           workTimer--
           fmt.Printf("\033[2K\rWork: %02d:%02d", int(workTimer / 60), workTimer % 60)
       }
     }
     alarm("Break Time!", streamer)
+
+    fmt.Printf("\033[2K\rBreak: %02d:%02d", int(breakTimer / 60), breakTimer % 60)
     for breakTimer > 0 {
-      fmt.Printf("\033[2K\rBreak: %02d:%02d", int(breakTimer / 60), breakTimer % 60)
+      timer := time.NewTimer(1 * time.Second)
 
       select {
         case <- wait:
           fmt.Printf("\033[2K\rBreak: %02d:%02d ||", int(breakTimer / 60), breakTimer % 60)
           <- resume
-        default:
-          timer := time.NewTimer(1 * time.Second)
-
-          <- timer.C
+          fmt.Printf("\033[2K\rBreak: %02d:%02d", int(breakTimer / 60), breakTimer % 60)
+        case <- timer.C:
           breakTimer--
           fmt.Printf("\033[2K\rBreak: %02d:%02d", int(breakTimer / 60), breakTimer % 60)
       }
@@ -89,8 +88,6 @@ func manage(wait, resume chan bool, reader *bufio.Reader) {
   defer term.Restore(int(os.Stdin.Fd()), old)
   w := false
   for true {
-    //in, _ := reader.ReadString('\n')
-    //in = strings.Replace(in, "\n", "", -1)
     var in []byte = make([]byte, 1)
     os.Stdin.Read(in)
 
