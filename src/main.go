@@ -10,9 +10,12 @@ import (
   "strconv"
 
   "golang.org/x/term"
+  "github.com/faiface/beep"
+  "github.com/faiface/beep/mp3"
+  "github.com/faiface/beep/speaker"
 )
 
-type Alarm func(string)
+type Alarm func(string, beep.Streamer)
 
 func setup(reader *bufio.Reader) (string, string) {
   fmt.Print("work time (minutes): ")
@@ -26,6 +29,14 @@ func setup(reader *bufio.Reader) (string, string) {
 }
 
 func run(wait, resume chan bool, wt, bt string, alarm Alarm) {
+  f, err := os.Open("/home/karl/Projects/Gomodoro/assets/beep.mp3")
+  if err != nil {
+    fmt.Println(err)
+  }
+  streamer, format, _ := mp3.Decode(f)
+  defer streamer.Close()
+  speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
+
   wtInt, wtErr := strconv.Atoi(wt)
   btInt, btErr := strconv.Atoi(bt)
 
@@ -35,8 +46,8 @@ func run(wait, resume chan bool, wt, bt string, alarm Alarm) {
   }
 
   for true {
-    workTimer := wtInt * 60
-    breakTimer := btInt * 60
+    workTimer := wtInt * 5
+    breakTimer := btInt * 5
 
     for workTimer > 0 {
 
@@ -54,7 +65,7 @@ func run(wait, resume chan bool, wt, bt string, alarm Alarm) {
       }
 
     }
-    alarm("Break Time!")
+    alarm("Break Time!", streamer)
     for breakTimer > 0 {
       timer := time.NewTimer(1 * time.Second)
 
@@ -62,7 +73,7 @@ func run(wait, resume chan bool, wt, bt string, alarm Alarm) {
       breakTimer--
       fmt.Printf("\rBreak: %02d:%02d", int(breakTimer / 60), breakTimer % 60)
     }
-    alarm("Work Time!")
+    alarm("Work Time!", streamer)
   }
 }
 
@@ -90,14 +101,23 @@ func manage(wait, resume chan bool, reader *bufio.Reader) {
   }
 }
 
-func notifySend(message string) {
+func notifySend(message string, streamer beep.Streamer) {
+  f, err := os.Open("/home/karl/Projects/Gomodoro/assets/beep.mp3")
+  if err != nil {
+    fmt.Println(err)
+  }
+  streamer, _, _ = mp3.Decode(f)
+
   cmd := exec.Command("notify-send", message)
-  _ = cmd.Run()
+
+  cmd.Run()
+  speaker.Play(streamer)
 }
 
 func main() {
   reader := bufio.NewReader(os.Stdin)
   wt, bt := setup(reader)
+
 
   wait := make(chan bool)
   resume := make(chan bool)
