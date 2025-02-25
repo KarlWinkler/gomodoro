@@ -73,7 +73,7 @@ func _get_time(number string) (int, error) {
 }
 
 func _get_magnitude(unit string) (int, error) {
-	units := map [string]int{"second": SECOND, "minute": MINUTE, "hour": HOUR}
+	units := map [string]int{"s": SECOND, "m": MINUTE, "h": HOUR}
 	unit = _format_unit(unit)
 
 	magnitude, ok := units[unit]
@@ -85,8 +85,8 @@ func _get_magnitude(unit string) (int, error) {
 }
 
 func _format_unit(unit string) string {
-	unit = strings.TrimRight(unit, "s")
 	unit = strings.ToLower(unit)
+	unit = unit[:1]
 
 	return unit
 }
