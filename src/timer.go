@@ -25,6 +25,7 @@ func _countdown(wait, resume chan bool, mode string, currentTime int) {
 		select {
 			case <- wait:
 				_printTimer(mode, currentTime)
+				fmt.Print(" ||")
 				<- resume
 				_printTimer(mode, currentTime)
 			case <- timer.C:
