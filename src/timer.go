@@ -9,10 +9,10 @@ type Alarm func(string)
 
 func run(wait, resume chan bool, wt, bt int, alarm Alarm) {
   for true {
-		_countdown(wait, resume, "Work", wt * 60)
+		_countdown(wait, resume, "Work", wt)
 		alarm("Break Time!")
 
-		_countdown(wait, resume, "Break", bt * 60)
+		_countdown(wait, resume, "Break", bt)
 		alarm("Break Time!")
   }
 }
