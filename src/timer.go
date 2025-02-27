@@ -13,7 +13,7 @@ func run(wait, resume chan bool, wt, bt int, alarm Alarm) {
 		alarm("Break Time!")
 
 		countdown(wait, resume, "Break", bt)
-		alarm("Break Time!")
+		alarm("Work Time!")
   }
 }
 

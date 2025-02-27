@@ -18,6 +18,7 @@ func setup(reader *bufio.Reader) (int, int) {
 	wt := get_time_with_retry("work time [minutes]: ", reader)
 	bt := get_time_with_retry("break time [minutes]: ", reader)
 
+	clear_screen()
   return wt, bt
 }
 
@@ -92,4 +93,8 @@ func format_unit(unit string) string {
 	unit = unit[:1]
 
 	return unit
+}
+
+func clear_screen() {
+	fmt.Print("\033[2J\033[H")
 }
